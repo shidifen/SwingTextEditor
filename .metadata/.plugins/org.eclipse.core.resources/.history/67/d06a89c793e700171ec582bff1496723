@@ -1,0 +1,501 @@
+package fane;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.*;
+import java.io.File;
+
+import javax.swing.*;
+import javax.swing.event.*;
+
+//The actual editor class; my first Swing program, hence the name
+public class FirstSwing extends JFrame {
+
+	private JComponent contentP;
+	private JTextArea textArea;
+	private JTabbedPane tabs;
+	int nrOfOpenDocs;
+	private LotsOfMenusBuilder builder;
+	
+	//purpose of this class is to group all the elements together
+	//this is what actually build the editor
+    private class LotsOfMenusBuilder {
+		//*All* the menu "elements" are listed here 
+    	JMenuBar	 mainMenu;
+		JMenu        fileM,      editM,         searchM,      dataStructM,   helpM;
+		JMenuItem    newItem,    newTabItem,    openItem,     saveItem, 
+		             saveAsItem, closeItem,     closeTabItem, exitItem, 
+		             undoItem,   redoItem,      cutItem,	  copyItem,   
+		             pasteItem,  selectAllItem, findItem,     findReplaceItem, 
+		             listItem,   hashItem,      contentsItem, aboutItem;
+		JTabbedPane tabss;
+		JOptionPane helpPane, aboutPane;
+		JButton plusSign;
+		boolean plusButtonPressedFlag;
+		final JFileChooser openSaveFileChooser;
+		
+		SmallCloseTabButton smallCloseTabButton;
+		
+		//Initialization: using an initializer block here instead of a ctor; 
+		//reason: simply, diversity *this is a test program after all*
+		{
+			//Set up the main menu of our program
+			mainMenu = new JMenuBar();
+			mainMenu.setBackground(new Color(255, 250, 190));
+			setJMenuBar(mainMenu);
+			
+			//Create the five menus within the menu bar
+			fileM = new JMenu("File");
+			editM = new JMenu("Edit");
+			searchM = new JMenu("Search");
+			dataStructM = new JMenu("Data Structure");
+			helpM = new JMenu("Help");
+
+			//Create all the menu items in the program
+			newItem = new JMenuItem("New");
+			newTabItem = new JMenuItem("New Tab");
+			openItem = new JMenuItem("Open");
+			saveItem = new JMenuItem("Save");
+			saveAsItem = new JMenuItem("Save As");
+			closeItem = new JMenuItem("Close");
+			closeTabItem = new JMenuItem("Close Tab");
+			exitItem = new JMenuItem("Exit");
+			
+			undoItem = new JMenuItem("Undo");
+			redoItem = new JMenuItem("Redo");
+			cutItem = new JMenuItem("Cut");
+			copyItem = new JMenuItem("Copy");
+			pasteItem = new JMenuItem("Paste");
+			selectAllItem = new JMenuItem("Select All");
+
+			findItem = new JMenuItem("Find");
+			findReplaceItem = new JMenuItem("Find and Replace");
+
+			listItem = new JMenuItem("List");
+			hashItem = new JMenuItem("Hash");
+
+			contentsItem = new JMenuItem("Contents");
+			aboutItem = new JMenuItem("About");
+			
+			//little plus sign for tab (when adding a new tab)
+			plusSign = new JButton("+");
+			
+			openSaveFileChooser = new JFileChooser();
+						
+		}
+		
+		//Ctor; will be called after the initialization block above as per Java rules
+		public LotsOfMenusBuilder() {
+			addMenustoMenuBar();
+			addMenuItemstoMenus();
+			addTooltipsToMenuItems();
+			addKeyMnemonicstoMenuItems();
+			addEventHandlersToMenuItems();
+			//constructDialogs();
+		}
+	
+		
+/*		
+		void constructDialogs() {
+		
+		}*/
+		
+		//Assign the five main menus to the menu bar in the enclosing class
+		void addMenustoMenuBar() {
+			mainMenu.add(fileM);
+			mainMenu.add(editM);
+			mainMenu.add(searchM);
+			mainMenu.add(dataStructM);
+			mainMenu.add(helpM);
+		}
+		
+		// Assign the menu items to the menus
+		void addMenuItemstoMenus() {
+			fileM.add(newItem);
+			fileM.add(newTabItem);
+			fileM.addSeparator();
+			fileM.add(openItem);
+			fileM.addSeparator();
+			fileM.add(saveItem);
+			fileM.add(saveAsItem);
+			fileM.addSeparator();
+			fileM.add(closeItem);
+			fileM.add(closeTabItem);
+			fileM.addSeparator();
+			fileM.add(exitItem);
+
+			editM.add(undoItem);
+			editM.add(redoItem);
+			editM.addSeparator();
+
+			editM.add(cutItem);
+			editM.add(copyItem);
+			editM.add(pasteItem);
+			editM.addSeparator();
+			editM.add(selectAllItem);
+
+			searchM.add(findItem);
+			searchM.add(findReplaceItem);
+
+			dataStructM.add(listItem);
+			dataStructM.add(hashItem);
+
+			helpM.add(contentsItem);
+			helpM.add(aboutItem);
+		}
+		
+		//add events for the menu items
+		void addEventHandlersToMenuItems() {
+			
+			
+			plusSign.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("33333");					
+				}
+			});
+			
+
+			/*tabs.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(){
+					System.out.println("jeu");
+				}
+
+			})*/;
+			
+			tabs.addChangeListener(new ChangeListener() {
+			    public void stateChanged(ChangeEvent e) {
+			        //System.out.println("Tab: " + tabs.getSelectedIndex());
+			    	if (plusButtonPressedFlag) 
+			    		return;
+			    	plusButtonPressedFlag = true;
+			    	int nrOfTabs = tabs.getTabCount();
+			    	
+			    	if (nrOfTabs < 3) {			
+			    	}
+			    	else if (tabs.getSelectedIndex() == nrOfTabs-1) {
+				    		tabs.remove(nrOfTabs-1);
+				        	tabs.addTab("Untitled", new JTextArea());
+				        	tabs.addTab("+", plusSign);
+				        	
+				        	tabs.setSelectedIndex(tabs.getTabCount()-2);
+				        	++nrOfOpenDocs;
+				    }
+			    	plusButtonPressedFlag = false;
+
+			    }
+			});
+			
+			openItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+		            int returnVal = openSaveFileChooser.showOpenDialog(FirstSwing.this);
+		 
+		            if (returnVal == JFileChooser.APPROVE_OPTION) {
+		                File file = openSaveFileChooser.getSelectedFile();
+		                //This is where a real application would open the file.
+		                System.out.println(file.getName());
+		            }
+   				}
+			});
+			
+			saveAsItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+		        	int returnVal = openSaveFileChooser.showSaveDialog(FirstSwing.this);
+					 
+		            if (returnVal == JFileChooser.APPROVE_OPTION) {
+		                File file = openSaveFileChooser.getSelectedFile();
+		                //This is where a real application would open the file.
+		                System.out.println(file.getName());
+		            } 
+				 }
+
+			});
+			
+			
+			aboutItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					boolean[] values = new boolean[9];
+					short counter = 0;
+					
+					
+					
+					JDialog aboutDialog = new JDialog();
+					aboutDialog.getContentPane().setLayout(new BoxLayout(
+							aboutDialog.getContentPane(), 
+							BoxLayout.Y_AXIS));
+					JPanel aboutPanel = new JPanel ();
+					JPanel xAndZeroPanel = new JPanel (
+							new GridLayout(3, 3, 5, 5));
+					JPanel bottomPanel = new JPanel ();
+					
+					for (int i = 0; i < 9; ++i) {
+						xAndZeroPanel.add(new JLabel("+"));
+						xAndZeroPanel.getComponent(i).addMouseListener(new MouseAdapter(){
+							@Override
+							public void mouseMoved(MouseEvent e){
+								System.out.println("vzt");
+								JDialog aboutDialog = new JDialog();
+								aboutDialog.getContentPane().setLayout(new BoxLayout(
+										aboutDialog.getContentPane(), 
+										BoxLayout.Y_AXIS));
+								aboutDialog.pack();
+								aboutDialog.setTitle("Not your usual \"About\"");
+								aboutDialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+								aboutDialog.setSize(100, 100);
+								aboutDialog.setVisible(true);
+							}
+						});
+					}
+
+					aboutPanel.add(xAndZeroPanel);
+					aboutPanel.add(bottomPanel);
+					
+					aboutDialog.add(aboutPanel);
+					aboutDialog.pack();
+					aboutDialog.setTitle("Not your usual \"About\"");
+					aboutDialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+					aboutDialog.setSize(100, 400);
+					aboutDialog.setVisible(true);
+					
+					//contentP.add(aboutDialog);
+				}
+							
+			});
+										
+			contentsItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JOptionPane.showMessageDialog(FirstSwing.this,
+							 "Help file");
+				}
+			});
+			
+			exitItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Object[] options = {
+							"Save", 
+							"Don't save", 
+							"Close all tabs", 
+							"Cancel"
+							};
+					
+					/*while (nr tabs>0)*/
+					//lista taburi cu modificari = ...
+					//for each tab cu modificari
+					
+					
+					int choice = JOptionPane.showOptionDialog(
+							FirstSwing.this, 
+							"Do you want to save the current document?"
+							+ "Document X hasn't been saved",
+							"Close Warning",
+							JOptionPane.YES_NO_CANCEL_OPTION, 
+							JOptionPane.WARNING_MESSAGE, 
+							null, options, options[3]);
+					
+					/*if (coice == JOptionPane.NO_OPTION)
+						//clsoe tab
+						if (--tabs == 0) System.exit(0);*/
+					switch (choice) {
+					case 3: 
+						return;
+					case 2:
+						System.exit(0);
+						break;
+					case 1:
+						//close tab
+						//continue;
+						break;
+					case 0:
+						openSaveFileChooser.showSaveDialog(FirstSwing.this);
+					//}
+					}
+				}
+
+			});
+			
+			newTabItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("click");
+					
+					tabs.addMouseListener(new MouseAdapter() {
+						public void mouseClicked(){
+							System.out.println("jeu");
+						}
+		
+					});
+					
+					//opportunity to use assert, 0 should never happen
+					assert nrOfOpenDocs != 0;
+					
+					if (nrOfOpenDocs == 1){
+						contentP.remove(textArea);
+						contentP.add(tabs);
+						//TODO instead of Untitled sa am Untitled1,2, cred ca cu bound variables
+						tabs.addTab("Original", textArea);
+						tabs.addTab("Untitled", new JTextArea());
+						tabs.addTab("+", plusSign);
+						tabs.setSelectedIndex(tabs.getTabCount()-2);
+
+						++nrOfOpenDocs;
+					}
+					else {
+						tabs.remove(tabs.getTabCount()-1);
+						tabs.addTab("Untitled", new JTextArea());
+						tabs.addTab("+", plusSign);
+						tabs.setSelectedIndex(tabs.getTabCount()-2);
+						//tabs.setTabComponentAt(tabs.getTabCount()-1, new SmallCloseTabButton());
+
+						++nrOfOpenDocs;
+					}
+				}
+				
+		});
+		}
+				
+		//Set tooltips for all the menu items
+		void addTooltipsToMenuItems(){
+			newItem.setToolTipText("Discard current tab contents");
+			newTabItem.setToolTipText("Open a blank new tab");
+			openItem.setToolTipText("Open a document");
+			saveItem.setToolTipText("Save the current document");
+			saveAsItem.setToolTipText("Save the current document as...");
+			closeItem.setToolTipText("Close current document");
+			closeTabItem.setToolTipText("Close current tab");
+			exitItem.setToolTipText("Exit the program");
+			undoItem.setToolTipText("Undo previous action");
+			redoItem.setToolTipText("Redo previous action");
+			cutItem.setToolTipText("Old plain cut");
+			copyItem.setToolTipText("Old plain copy");
+			pasteItem.setToolTipText("Old plain paste");
+			selectAllItem.setToolTipText("Select the entire text");
+			findItem.setToolTipText("Find string");
+			findReplaceItem.setToolTipText("Find and replace string");
+			listItem.setToolTipText("Under construction");
+			hashItem.setToolTipText("Under construction");
+			contentsItem.setToolTipText("Small help file");
+			aboutItem.setToolTipText("Stuff 'bout this marvellous piece of software");
+		}
+		
+		// Assign key mnemonics to some menu items
+		//(I prefer direct shortcuts rather than those used only after the menu is open)
+		void addKeyMnemonicstoMenuItems() {
+						openItem.setAccelerator(KeyStroke
+					.getKeyStroke (KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
+			newItem.setAccelerator(KeyStroke
+					.getKeyStroke (KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
+			newTabItem.setAccelerator(KeyStroke
+					.getKeyStroke (KeyEvent.VK_T, InputEvent.CTRL_DOWN_MASK));
+			saveItem.setAccelerator(KeyStroke
+					.getKeyStroke (KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
+			exitItem.setAccelerator(KeyStroke
+					.getKeyStroke (KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
+			closeTabItem.setAccelerator(KeyStroke
+					.getKeyStroke (KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK));
+			
+			undoItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK));
+			redoItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
+			cutItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
+			copyItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+			pasteItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+			selectAllItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK));
+			findItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+			contentsItem.setAccelerator(KeyStroke
+					.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK));
+		}
+		
+		private class SmallCloseTabButton extends JButton implements ActionListener {
+	        public SmallCloseTabButton() {
+	            int size = 17;
+	            setPreferredSize(new Dimension(size, size));
+	            setToolTipText("close this tab");
+	            
+	            setContentAreaFilled(false);
+	            //No need to be focusable
+	            setFocusable(false);
+	            setBorder(BorderFactory.createEtchedBorder());
+	            setBorderPainted(false);
+	            //Making nice rollover effect
+	            //we use the same listener for all buttons
+	            addMouseListener(new MouseAdapter() {
+	                    public void mouseEntered(MouseEvent e) {
+	                        Component component = e.getComponent();
+	                        if (component instanceof AbstractButton) {
+	                            AbstractButton button = (AbstractButton) component;
+	                            button.setBorderPainted(true);
+	                        }
+	                    }
+
+	                    public void mouseExited(MouseEvent e) {
+	                        Component component = e.getComponent();
+	                        if (component instanceof AbstractButton) {
+	                            AbstractButton button = (AbstractButton) component;
+	                            button.setBorderPainted(false);
+	                        }
+	                    }
+	            	
+	            });
+	            setRolloverEnabled(true);
+	            //Close the proper tab by clicking the button
+	            addActionListener(this);
+	        }
+
+	        public void actionPerformed(ActionEvent e) {
+	            System.out.println("se poate sterge");
+	        }
+
+	    } 
+		
+	};
+
+	//may implement someday a do-it-all program
+	private enum AppType {
+		TEXT_EDITOR, PHOTO_VIEWER, EXIF_READER;
+	};
+	private AppType apptype;
+
+	
+	private JTextArea createTextArea() {
+		JTextArea textArea = new JTextArea();
+		textArea.setOpaque(true);
+		return textArea;
+	}
+	
+	public FirstSwing() {
+		setTitle("Swing Text Editor");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(500, 500);
+		
+		contentP = (JPanel) getContentPane();
+		setContentPane(contentP);
+		
+		tabs = new JTabbedPane(JTabbedPane.LEFT);
+		textArea = createTextArea();
+		JScrollPane scrollPane = new JScrollPane(textArea); 
+		
+	    contentP.add(textArea);
+	    ++nrOfOpenDocs;
+	    
+	    contentP.setVisible(true);
+
+		builder = new LotsOfMenusBuilder();
+
+		setVisible(true);
+	}
+}

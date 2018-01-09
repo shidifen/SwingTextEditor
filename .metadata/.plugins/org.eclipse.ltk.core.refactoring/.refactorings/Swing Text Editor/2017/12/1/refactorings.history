@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;fileWasSavedBefore&apos; in &apos;fane.FirstSwing.CustomJTextArea&apos; to &apos;wasSavedBefore&apos;&#x0A;- Original project: &apos;HelloWorld&apos;&#x0A;- Original element: &apos;fane.FirstSwing.CustomJTextArea.fileWasSavedBefore&apos;&#x0A;- Renamed element: &apos;fane.FirstSwing.CustomJTextArea.wasSavedBefore&apos;&#x0A;- Update references to refactored element&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;fileWasSavedBefore&apos;" flags="589830" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/src\/fane&lt;fane{FirstSwing.java[FirstSwing[CustomJTextArea^fileWasSavedBefore" name="wasSavedBefore" references="true" setter="false" stamp="1514691066086" textual="false" version="1.0"/>
+</session>
